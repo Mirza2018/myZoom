@@ -13,41 +13,35 @@ const app = express();
 app.set("port", process.env.PORT || 2018);
 app.set("mongo_USER", process.env.DB_USER);
 app.set("mongo_PASS", process.env.DB_PASS);
+const url = `mongodb+srv://${app.get("mongo_USER")}:${app.get(
+  "mongo_PASS"
+)}@myzoom.cimztif.mongodb.net/myZoom?appName=MyZoom`;
 
 app.use(cors());
 app.use(express.json({ limit: "40kb" }));
 app.use(express.urlencoded({ extended: true, limit: "40kb" }));
 
-
 const server = createServer(app);
 const io = connectToSocket(server);
 
-// app.set("mongo_userID", process.env.USER_ID);
 app.get("/", (req, res) => {
   return res.json({ hello: "World" });
 });
 
-
 app.use("/api/v1/users", userRouters);
+
 const start = async () => {
-  const connettionDB = await mongoose.connect(
-    `mongodb+srv://${app.get("mongo_USER")}:${app.get(
-      "mongo_PASS"
-    )}@myzoom.cimztif.mongodb.net/myZoom?appName=MyZoom`
-  );
+  try {
+    const res = await mongoose.connect(url);
+    console.log(`MONGO Connected DB HOST: ${res.connection.host}`);
 
-  //   `mongodb+srv://${app.get("mongo_USER")}:${app.get(
-  //     "mongo_PASS"
-  //   )}@myzoom.cimztif.mongodb.net/?appName=MyZoom`;
-
-  //  `mongodb+srv://${app.get("mongo_USER")}:${app.get(
-  //    "mongo_PASS"
-  //  )}@myzoom.cimztif.mongodb.net/`;
-  console.log(`MONGO Connected DB HOST: ${connettionDB.connection.host}`);
-
-  server.listen(app.get("port"), () => {
-    console.log(`LISTENIN ON PORT ${app.get("port")}`);
-  });
+    server.listen(app.get("port"), () => {
+      console.log(`Server running on port ${app.get("port")}`);
+    });
+  } catch (error) {
+    console.error("Database connection failed:", error.message);
+    process.exit(1);
+  }
 };
 
 start();
