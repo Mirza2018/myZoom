@@ -22,7 +22,7 @@ app.use(express.json({ limit: "40kb" }));
 app.use(express.urlencoded({ extended: true, limit: "40kb" }));
 
 const server = createServer(app);
-const io = connectToSocket(server);
+const io = connectToSocket(server);  
 
 app.get("/", (req, res) => {
   return res.json({ hello: "World" });

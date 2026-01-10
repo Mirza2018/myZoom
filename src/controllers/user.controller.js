@@ -28,6 +28,8 @@ const login = async (req, res) => {
 
       await userInfo.save();
       return res.status(httpStatus.OK).json({ token: token });
+    } else {
+      return res.status(httpStatus.UNAUTHORIZED).json({message:"Invalide UserName or Passwprd"})
     }
   } catch (error) {
     return res.status(500).json({ message: `Something went worng ${error}` });
