@@ -27,8 +27,13 @@ export const connectToSocket = (server) => {
       //   io.to(elem)s
       // })
       for (let a = 0; a < connections[path].length; a++) {
-        io.to(connections[path][a]).emit("user-joined", socket.id);
+        io.to(connections[path][a]).emit(
+          "user-joined",
+          socket.id,
+          connections[path]
+        );
       }
+
 
       // if (messages[path] !== undefined) {
       //   for (let a = 0; a < messages[path].length; ++a) {
@@ -82,28 +87,36 @@ export const connectToSocket = (server) => {
       }
     });
 
-    socket.on("disconnect", () => {
-      var diffTime = Math.abs(timeOnline[socket.id] - new Date());
-      var key;
-      for (const [k, v] of JSON.parse(
-        JSON.stringify(Object.entries(connections))
-      )) {
-        for (let a = 0; a < v.length; ++a) {
-          if (v[a] === socket.id) {
-            key = k;
-            for (let a = 0; a < connections[key].length; ++a) {
-              io.to(connections[key][a].emit("user-left", socket.id));
-            }
-            var index = connections[key].indexOf(socket.id);
-            connections[key].splice(index, 1);
+ socket.on("disconnect", () => {
+   var diffTime = Math.abs(timeOnline[socket.id] - new Date());
 
-            if (connections[key].length === 0) {
-              delete connections[key];
-            }
-          }
-        }
-      }
-    });
+   var key;
+
+   for (const [k, v] of JSON.parse(
+     JSON.stringify(Object.entries(connections))
+   )) {
+     for (let a = 0; a < v.length; ++a) {
+       if (v[a] === socket.id) {
+         key = k;
+
+         for (let a = 0; a < connections[key].length; ++a) {
+           io.to(connections[key][a]).emit("user-left", socket.id);
+         }
+
+         var index = connections[key].indexOf(socket.id);
+
+         connections[key].splice(index, 1);
+
+         if (connections[key].length === 0) {
+           delete connections[key];
+         }
+       }
+     }
+   }
+ });
+
+
+
   });
 
   return io ;
